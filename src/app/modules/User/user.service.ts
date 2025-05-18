@@ -1,12 +1,5 @@
 import httpStatus from "http-status";
-import {
-  Admin,
-  Doctor,
-  Patient,
-  Prisma,
-  UserRole,
-  UserStatus,
-} from "@prisma/client";
+
 import * as bcrypt from "bcrypt";
 import prisma from "../../../shared/prisma";
 import { uploadFile } from "../../../Helpers/fileUpload";

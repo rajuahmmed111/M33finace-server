@@ -75,8 +75,25 @@ model User {
   transactions  Transaction[]
   loyaltyPoints LoyaltyPoints?
   staffProfile  StaffProfile?
+  admin         Admin?
 
   @@map("users")
+}
+
+model Admin {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  profilePhoto  String?
+  contactNumber String
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // relations
+  user User @relation(fields: [email], references: [email])
+
+  @@map("admins")
 }
 
 model Profile {
@@ -84,7 +101,7 @@ model Profile {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   // address     Address?
-  barcode   String  @unique
+  barcode   String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
