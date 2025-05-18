@@ -6,7 +6,7 @@ import { uploadFile } from "../../../Helpers/fileUpload";
 import { IUploadedFile } from "../../../Interface/file";
 import { Request } from "express";
 import ApiError from "../../../Error/apiError";
-import { Admin } from "@prisma/client";
+import { Admin, UserRole } from "@prisma/client";
 
 // create admin
 const createAdmin = async (req: Request): Promise<Admin> => {

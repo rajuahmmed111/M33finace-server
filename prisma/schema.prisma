@@ -27,6 +27,11 @@ enum UserRole {
   SUPER_ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  DELETED
+}
+
 enum PaymentMethod {
   APPLE_PAY
   GOOGLE_PAY
@@ -62,14 +67,15 @@ enum PointType {
 // ------------------------------
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   password  String
   name      String?
   phone     String?
-  userRole      UserRole    @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userRole  UserRole   @default(CUSTOMER)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   // Relationship
   profile       Profile?

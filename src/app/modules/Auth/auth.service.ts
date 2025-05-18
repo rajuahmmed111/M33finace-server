@@ -49,7 +49,6 @@ const loginUser = async (email: string, password: string) => {
   return {
     accessToken,
     refreshToken,
-    needPasswordChange: userData.needPasswordChange,
   };
 };
 
@@ -84,7 +83,6 @@ const refreshToken = async (token: string) => {
 
   return {
     accessToken: newAccessToken,
-    needPasswordChange: isUserExist.needPasswordChange,
   };
 };
 
@@ -120,7 +118,6 @@ const changePassword = async (
     },
     data: {
       password: hashedPassword,
-      needPasswordChange: false,
     },
   });
 
