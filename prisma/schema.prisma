@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------
+//            ENUM
+// ------------------------------
+
+// type Address {
+//   street      String
+//   city        String
+//   state       String
+//   zipCode     String
+//   country     String
+// }
+
+// Enums
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum PaymentMethod {
+  APPLE_PAY
+  GOOGLE_PAY
+  PAYPAL
+  CREDIT_CARD
+  NAYAX
+  CASH
+}
+
+enum TransactionStatus {
+  PENDING
+  PAID
+  REFUNDED
+  CANCELLED
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PointType {
+  EARNED
+  REDEEMED
+  MANUAL_ADDITION
+  EXPIRED
+}
+
+// ------------------------------
+//            MODEL
+// ------------------------------
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  phone     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationship
+  profile       Profile?
+  transactions  Transaction[]
+  loyaltyPoints LoyaltyPoints?
+  staffProfile  StaffProfile?
+
+  @@map("users")
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // address     Address?
+  barcode   String  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model LoyaltyPoints {
+  id        String         @id @default(uuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points    Int            @default(0)
+  history   PointHistory[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("loyalty_points")
+}
+
+model PointHistory {
+  id              String        @id @default(uuid())
+  loyaltyPointsId String
+  loyaltyPoints   LoyaltyPoints @relation(fields: [loyaltyPointsId], references: [id], onDelete: Cascade)
+  points          Int
+  type            PointType
+  description     String?
+  transactionId   String?
+  transaction     Transaction?  @relation(fields: [transactionId], references: [id])
+  createdAt       DateTime      @default(now())
+
+  @@map("point_history")
+}
+
+model StaffProfile {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationId  String?
+  location    Location?    @relation(fields: [locationId], references: [id])
+  position    String?
+  time_sheets Time_Sheet[]
+  tasks       Task[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("staff_profiles")
+}
+
+model Location {
+  id        String         @id @default(uuid())
+  name      String
+  // address     Address
+  staff     StaffProfile[]
+  services  Service[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("locations")
+}
+
+model Time_Sheet {
+  id        String       @id @default(uuid())
+  staffId   String
+  staff     StaffProfile @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  clockIn   DateTime
+  clockOut  DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model Service {
+  id           String           @id @default(uuid())
+  name         String
+  description  String?
+  price        Float
+  locationId   String
+  location     Location         @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  settings     ServiceSettings?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model ServiceSettings {
+  id        String   @id @default(uuid())
+  serviceId String   @unique
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  settings  Json // For dryer settings like heat, time, price
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  serviceId     String
+  service       Service           @relation(fields: [serviceId], references: [id])
+  amount        Float
+  paymentMethod PaymentMethod
+  status        TransactionStatus
+  pointHistory  PointHistory[]
+  tasks         Task[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Task {
+  id            String        @id @default(uuid())
+  transactionId String
+  transaction   Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  assignedToId  String?
+  assignedTo    StaffProfile? @relation(fields: [assignedToId], references: [id])
+  status        TaskStatus    @default(PENDING)
+  description   String
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
